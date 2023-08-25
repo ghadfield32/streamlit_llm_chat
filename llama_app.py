@@ -15,7 +15,7 @@ openai.api_key = st.secrets["openai_key"]
 
 # Display title and basketball-themed info.
 st.title("🏀 Chat with a Basketball Pro!")
-st.image("https://images.unsplash.com/photo-1593642702909-dec73df255d7", use_column_width=True)
+st.image("https://www.dreamstime.com/editorial-stock-photo-larry-bird-boston-celtics-legend-image-taken-color-slide-image73861513", use_column_width=True)
 st.write("Hey there! I've played and studied basketball for years. Ask me anything about the game, strategies, or stats!")
 
 # Initialize session state for messages if not already done.
