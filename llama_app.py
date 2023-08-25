@@ -1,10 +1,5 @@
-import streamlit as st
-from llama_index import VectorStoreIndex, ServiceContext, Document
-from llama_index.llms import OpenAI
 import openai
-from llama_index import SimpleDirectoryReader
-from openai.error import OpenAIError
-import tenacity
+import streamlit as st
 
 # Page configuration.
 st.set_page_config(
@@ -19,66 +14,22 @@ st.set_page_config(
 openai.api_key = st.secrets["openai_key"]
 
 # Display title and info.
-st.title("Chat with the Streamlit docs, powered by LlamaIndex 💬🦙")
-st.info(
-    "Check out the full tutorial to build this app in our [blog post](https://blog.streamlit.io/build-a-chatbot-with-custom-data-sources-powered-by-llamaindex/)",
-    icon="📃"
-)
+st.title("💬 Chatbot")
+if "messages" not in st.session_state:
+    st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
 
-# Initialize session state for messages if it doesn't exist.
-if "messages" not in st.session_state.keys():
-    st.session_state.messages = [
-        {
-            "role": "assistant",
-            "content": "Ask me a question about Streamlit's open-source Python library!"
-        }
-    ]
+for msg in st.session_state.messages:
+    st.chat_message(msg["role"]).write(msg["content"])
 
-# Cached data loader with adjusted retry mechanism for GPT Premium's higher rate limits.
-@st.cache_resource(show_spinner=False, ttl=3600)
-@tenacity.retry(wait=tenacity.wait_fixed(45), stop=tenacity.stop_after_attempt(4), reraise=True)
-def load_data():
-    try:
-        with st.spinner(text="Loading and indexing the Streamlit docs..."):
-            reader = SimpleDirectoryReader(input_dir="./data", recursive=True)
-            docs = reader.load_data()
-            service_context = ServiceContext.from_defaults(
-                llm=OpenAI(model="gpt-3.5-turbo", temperature=0.5, system_prompt="... (rest of your prompt)")
-            )
-            index = VectorStoreIndex.from_documents(docs, service_context=service_context)
-            return index
-    except openai.error.RateLimitError:
-        st.error("We've hit the OpenAI API rate limit. Please try again in a bit.")
-        return None
+if prompt := st.chat_input():
+    if not openai_api_key:
+        st.info("Please add your OpenAI API key to continue.")
+        st.stop()
 
-index = load_data()
-
-# Proceed if index is loaded.
-if index:
-    chat_engine = index.as_chat_engine(chat_mode="condense_question", verbose=True)
-
-    # Get user input.
-    if prompt := st.chat_input("Your question"):
-        st.session_state.messages.append({"role": "user", "content": prompt})
-
-    # Display the chat history.
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.write(message["content"])
-
-    # Respond to the user's message if it's the latest.
-
-if st.session_state.messages[-1]["role"] != "assistant":
-    with st.chat_message("assistant"):
-        with st.spinner("Thinking..."):
-            try:
-                response = chat_engine.chat(prompt)
-                st.write(response.response)
-                message = {"role": "assistant", "content": response.response}
-                st.session_state.messages.append(message)
-            except tenacity.RetryError:
-                st.write("Sorry, I've tried several times but the service is too busy right now. Please try again later.")
-            except Exception as e:
-                st.write(f"An unexpected error occurred: {e}")
-
-
+    openai.api_key = openai_api_key
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    st.chat_message("user").write(prompt)
+    response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=st.session_state.messages)
+    msg = response.choices[0].message
+    st.session_state.messages.append(msg)
+    st.chat_message("assistant").write(msg.content)
