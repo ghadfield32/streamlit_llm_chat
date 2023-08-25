@@ -1,12 +1,10 @@
 import openai
 import streamlit as st
-import time
-
 
 # Page configuration.
 st.set_page_config(
-    page_title="Chat with the Streamlit Chatbot",
-    page_icon="🤖",
+    page_title="Chat with the Streamlit docs, powered by OpenAI",
+    page_icon="🦙",
     layout="centered",
     initial_sidebar_state="auto",
     menu_items=None
@@ -15,41 +13,34 @@ st.set_page_config(
 # Set the OpenAI API key.
 openai.api_key = st.secrets["openai_key"]
 
-# Display robot image.
-st.image("https://YOUR_IMAGE_URL_HERE.png", width=150, use_column_width=False)  # Replace with the URL to your robot image.
-
-# Display title and info with creative styling.
+# Display title and info.
 st.title("💬 Chatbot")
-st.markdown(
-    """
-    Welcome to the Streamlit Chatbot! 🤖
-    
-    Ask anything you'd like, and let the chatbot amaze you with its answers.
-    """,
-    unsafe_allow_html=True
-)
+st.image("path_to_robot_image.jpg", use_column_width=True)  # Assuming you've added an image of the robot
+st.write("Welcome to the futuristic I, Robot themed chatbot! How can I assist you today?")
 
-# Initialize messages if they don't exist in the session state.
+# Initialize session state for messages if not already done.
 if "messages" not in st.session_state:
-    st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you today?"}]
+    st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
 
-# Display chat messages.
+# Initialize the API call counter if it doesn't exist
+MAX_PROMPTS = 10  # adjust according to your needs
+if "api_calls" not in st.session_state:
+    st.session_state["api_calls"] = 0
+
+# Display previous messages.
 for msg in st.session_state.messages:
-    if msg["role"] == "user":
-        st.markdown(f"👤: {msg['content']}", unsafe_allow_html=True)
-    else:
-        st.markdown(f"🤖: {msg['content']}", unsafe_allow_html=True)
+    st.chat_message(msg["role"]).write(msg["content"])
 
-
-# Get user input and display the chatbot's response.
-if prompt := st.text_input("Your Question:"):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    try:
+# When the user submits a new question or statement.
+if prompt := st.chat_input():
+    if st.session_state["api_calls"] < MAX_PROMPTS:
+        # Make the API call
         response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=st.session_state.messages)
         msg = response.choices[0].message
         st.session_state.messages.append(msg)
-    except openai.error.RateLimitError:
-        st.error("We've hit the OpenAI API rate limit. Please try again in a few minutes.")
-    except Exception as e:
-        st.error(f"An unexpected error occurred: {e}")
+        st.chat_message("assistant").write(msg.content)
 
+        # Increment the counter
+        st.session_state["api_calls"] += 1
+    else:
+        st.warning("Sorry, we have reached the maximum number of requests for now. Please try again later.")
