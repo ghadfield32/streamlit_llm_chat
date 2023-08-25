@@ -14,12 +14,12 @@ st.set_page_config(
 openai.api_key = st.secrets["openai_key"]
 
 # Display title and basketball-themed info.
-st.title("🏀 Chat with a Basketball Pro!")
-st.write("Hey there! I've played and studied basketball for years. Ask me anything about the game, strategies, or stats!")
+st.title("🏀 Chat with an Old Basketball Pro!")
+st.write("Hey there! Back in my day, I used to sink threes with the best of 'em. Now, I'm here to help you with anything basketball. What's on your mind, rookie?")
 
 # Initialize session state for messages if not already done.
 if "messages" not in st.session_state:
-    st.session_state["messages"] = [{"role": "system", "content": "You are a professional basketball player with vast knowledge of the game's history, statistics, and strategies."}]
+    st.session_state["messages"] = [{"role": "system", "content": "Warming up on the court! 🏀 Ready to assist and share some hoops wisdom. Pass the ball, and let's get this conversation rolling!"}]
 
 # Display previous messages.
 for msg in st.session_state.messages:
