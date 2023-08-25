@@ -15,7 +15,7 @@ openai.api_key = st.secrets["openai_key"]
 
 # Display title and basketball-themed info.
 st.title("🏀 Chat with a Basketball Pro!")
-st.image("https://www.dreamstime.com/editorial-stock-photo-larry-bird-boston-celtics-legend-image-taken-color-slide-image73861513", use_column_width=True)
+st.image("https://www.google.com/imgres?imgurl=https%3A%2F%2Fwww.si.com%2F.image%2Far_1%3A1%252Cc_fill%252Ccs_srgb%252Cfl_progressive%252Cq_auto%3Agood%252Cw_1200%2FMTY4MTkwMDY2NzYwNDkyOTU3%2F130528114807-jerry-west-01168771-nba-logo-single-image-cutjpg.jpg&tbnid=S6xMaH47oFDYrM&vet=12ahUKEwiymZ_gsviAAxVbvoQIHY2IDFMQMygAegQIARBN..i&imgrefurl=https%3A%2F%2Fwww.si.com%2Fnba%2F2014%2F05%2F28%2Fclassic-si-photos-jerry-west&docid=aRKeb2Nm8aJkuM&w=1200&h=1200&q=jerry%20west%20google%20images&client=firefox-b-1-d&ved=2ahUKEwiymZ_gsviAAxVbvoQIHY2IDFMQMygAegQIARBN", use_column_width=True)  # Change the URL to your preferred basketball image
 st.write("Hey there! I've played and studied basketball for years. Ask me anything about the game, strategies, or stats!")
 
 # Initialize session state for messages if not already done.
