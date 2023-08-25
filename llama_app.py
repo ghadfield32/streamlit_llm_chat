@@ -36,7 +36,7 @@ if "messages" not in st.session_state.keys():
 
 # Cached data loader with adjusted retry mechanism for GPT Premium's higher rate limits.
 @st.cache_resource(show_spinner=False, ttl=3600)
-@tenacity.retry(wait=tenacity.wait_fixed(30), stop=tenacity.stop_after_attempt(5), reraise=True) # Reduced wait time due to higher rate limits for premium users.
+@tenacity.retry(wait=tenacity.wait_fixed(45), stop=tenacity.stop_after_attempt(4), reraise=True)
 def load_data():
     try:
         with st.spinner(text="Loading and indexing the Streamlit docs..."):
@@ -67,19 +67,18 @@ if index:
             st.write(message["content"])
 
     # Respond to the user's message if it's the latest.
-    if st.session_state.messages[-1]["role"] != "assistant":
-        with st.chat_message("assistant"):
-            with st.spinner("Thinking..."): # Since premium provides faster response times, the user experience will be smoother.
-                try:
-                    response = chat_engine.chat(prompt)
-                    st.write(response.response)
-                    message = {"role": "assistant", "content": response.response}
-                    st.session_state.messages.append(message)
-                except tenacity.RetryError as e:
-                    if "RateLimitError" in str(e.last_attempt.exception()):
-                        st.write("Sorry, I'm getting too many requests right now. Please wait a bit and try again.")
-                    else:
-                        st.write("Sorry, there was an error processing your request.")
-                except Exception as e:
-                    st.write(f"An unexpected error occurred: {e}")
+
+if st.session_state.messages[-1]["role"] != "assistant":
+    with st.chat_message("assistant"):
+        with st.spinner("Thinking..."):
+            try:
+                response = chat_engine.chat(prompt)
+                st.write(response.response)
+                message = {"role": "assistant", "content": response.response}
+                st.session_state.messages.append(message)
+            except tenacity.RetryError:
+                st.write("Sorry, I've tried several times but the service is too busy right now. Please try again later.")
+            except Exception as e:
+                st.write(f"An unexpected error occurred: {e}")
+
 
