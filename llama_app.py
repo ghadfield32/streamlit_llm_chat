@@ -5,6 +5,7 @@ import openai
 from llama_index import SimpleDirectoryReader
 import time  # For adding delay
 from openai.error import OpenAIError  # To catch specific OpenAI errors
+import tenacity  # Import the tenacity library for its RetryError
 
 st.set_page_config(page_title="Chat with the Streamlit docs, powered by LlamaIndex", page_icon="🦙", layout="centered", initial_sidebar_state="auto", menu_items=None)
 openai.api_key = st.secrets["openai_key"]
@@ -35,6 +36,7 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.write(message["content"])
 
+
 if st.session_state.messages[-1]["role"] != "assistant":
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
@@ -43,9 +45,12 @@ if st.session_state.messages[-1]["role"] != "assistant":
                 st.write(response.response)
                 message = {"role": "assistant", "content": response.response}
                 st.session_state.messages.append(message)
-            except OpenAIError as e:  # Catch OpenAI specific errors
-                if "RateLimitError" in str(e):  # Check if it's a rate limit error
+            except tenacity.RetryError as e:
+                # Check if the underlying exception is a RateLimitError
+                if "RateLimitError" in str(e.last_attempt.exception()):
                     st.write("Sorry, I'm getting too many requests right now. Please wait a moment and try again.")
-                    time.sleep(10)  # You can adjust this delay as needed
                 else:
                     st.write("Sorry, there was an error processing your request.")
+            except Exception as e:  # Catch any other general exceptions
+                st.write(f"An unexpected error occurred: {e}")
+
