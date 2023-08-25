@@ -15,10 +15,6 @@ openai.api_key = st.secrets["openai_key"]
 
 # Display title and info.
 st.title("💬 Chatbot")
-
-# Adjust the following line to the correct image path
-st.image("irobot.jpg", use_column_width=True)  # Adjust this path if the image is in a different directory
-
 st.write("Welcome to the futuristic I, Robot themed chatbot! How can I assist you today?")
 
 # Initialize session state for messages if not already done.
