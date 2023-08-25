@@ -1,5 +1,7 @@
 import openai
 import streamlit as st
+import time
+
 
 # Page configuration.
 st.set_page_config(
@@ -38,9 +40,16 @@ for msg in st.session_state.messages:
     else:
         st.markdown(f"🤖: {msg['content']}", unsafe_allow_html=True)
 
+
 # Get user input and display the chatbot's response.
 if prompt := st.text_input("Your Question:"):
     st.session_state.messages.append({"role": "user", "content": prompt})
-    response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=st.session_state.messages)
-    msg = response.choices[0].message
-    st.session_state.messages.append(msg)
+    try:
+        response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=st.session_state.messages)
+        msg = response.choices[0].message
+        st.session_state.messages.append(msg)
+    except openai.error.RateLimitError:
+        st.error("We've hit the OpenAI API rate limit. Please try again in a few minutes.")
+    except Exception as e:
+        st.error(f"An unexpected error occurred: {e}")
+
